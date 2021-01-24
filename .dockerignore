@@ -1,0 +1,7 @@
+.git
+.cache
+helm
+tmp
+Dockerfile
+user.db
+user.log

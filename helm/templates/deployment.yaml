@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "hello-page-and-return-name.fullname" . }}
+  labels:
+    {{- include "hello-page-and-return-name.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.deployment.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "hello-page-and-return-name.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.deployment.annotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "hello-page-and-return-name.selectorLabels" . | nindent 8 }}
+        {{- with .Values.deployment.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- if .Values.persistentVolumeClaim.enabled }}
+      volumes:
+      - name: {{ .Chart.Name }}
+        persistentVolumeClaim:
+          claimName: {{ .Chart.Name }}-claim
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag }}"
+          imagePullPolicy: {{ .Values.deployment.image.pullPolicy }}
+          env:
+            {{- range $name, $value := .Values.deployment.env }}
+            - name: {{ $name }}
+              value: "{{ $value }}"
+            {{- end }}
+          {{- with .Values.deployment.ports }}
+          ports:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.deployment.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.deployment.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if .Values.persistentVolumeClaim.enabled }}
+          volumeMounts:
+          - mountPath: {{ .Values.deployment.volumeMountsPath | default "/usr/share/" }}
+            name: {{ .Chart.Name }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.deployment.resources | nindent 12 }}
+      {{- with .Values.deployment.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

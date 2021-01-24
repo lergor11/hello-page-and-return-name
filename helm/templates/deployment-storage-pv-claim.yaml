@@ -1,0 +1,14 @@
+{{- if .Values.persistentVolumeClaim.enabled -}}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Chart.Name }}-claim
+spec:
+  storageClassName: {{ .Values.persistentVolumeClaim.storageClassName | default "hostpath" }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.persistentVolumeClaim.storageSize | default "10Mi" }}
+{{- end }}

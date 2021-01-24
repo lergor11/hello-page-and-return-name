@@ -1,0 +1,52 @@
+deployment:
+  env:
+    HTTP_ADDR: ":8080"
+    SQLITE_FILE: "/usr/share/hello-page-and-return-name/user.db"
+  annotations: {}
+    #prometheus.io/scrape: 'true'
+    #prometheus.io/port: '8080'
+    #prometheus.io/path: '/metrics'
+  labels: {}
+  image:
+    repository: "85212355/hello-page-and-return-name"
+    pullPolicy: IfNotPresent
+    tag: "0.0.1"
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  ports:
+    - name: http
+      containerPort: 8080
+      protocol: TCP
+  livenessProbe:
+    httpGet:
+      path: /status
+      port: http
+  readinessProbe:
+    httpGet:
+      path: /status
+      port: http
+  volumeMountsPath: "/usr/share/hello-page-and-return-name"
+  nodeSelector: {}
+
+
+service:
+  type: ClusterIP
+  port: 80
+
+persistentVolumeClaim:
+  enabled: true
+  storageClassName: hostpath
+  storageSize: 10Mi
+
+serviceMonitor:
+  enabled: false
+  #endpoints:
+  # - port: http
+  #   interval: 15s
+  #   path: /_metrics
